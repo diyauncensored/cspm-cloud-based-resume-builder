@@ -149,6 +149,11 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Skip link for keyboard users */}
+      <a className="skip-link" href="#main-editor">
+        Skip to editor
+      </a>
+
       <Header 
         resumeData={resumeData}
         setResumeData={setResumeData}
@@ -159,38 +164,50 @@ export default function App() {
         onResetData={handleResetData}
       />
 
-      <main className="app-main">
+      <main className="app-main" role="main" aria-label="Resume builder workspace">
         {/* Editor Pane (Left) */}
-        <div className={`editor-pane ${mobileTab === 'preview' ? 'hide-mobile' : ''}`}>
+        <section 
+          id="main-editor"
+          className={`editor-pane ${mobileTab === 'preview' ? 'hide-mobile' : ''}`}
+          aria-label="Resume editor"
+        >
           <EditorTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="editor-content">
             {renderActiveTabContent()}
           </div>
-        </div>
+        </section>
 
         {/* Live Preview Pane (Right) */}
-        <div className={`preview-pane ${mobileTab === 'editor' ? 'hide-mobile' : ''}`}>
+        <section 
+          className={`preview-pane ${mobileTab === 'editor' ? 'hide-mobile' : ''}`}
+          aria-label="Resume live preview"
+        >
           <ResumePreview resumeData={resumeData} styleSettings={styleSettings} />
-        </div>
+        </section>
       </main>
 
       {/* Mobile Switcher Bar */}
-      <div className="mobile-view-toggle">
+      <nav className="mobile-view-toggle" role="navigation" aria-label="View switcher">
         <button 
           className={`btn ${mobileTab === 'editor' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setMobileTab('editor')}
+          aria-current={mobileTab === 'editor' ? 'true' : undefined}
+          aria-label="Show resume editor"
         >
-          <FileEdit size={16} />
+          <FileEdit size={16} aria-hidden="true" />
           <span>Editor</span>
         </button>
         <button 
           className={`btn ${mobileTab === 'preview' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setMobileTab('preview')}
+          aria-current={mobileTab === 'preview' ? 'true' : undefined}
+          aria-label="Show live preview"
         >
-          <Eye size={16} />
+          <Eye size={16} aria-hidden="true" />
           <span>Live Preview</span>
         </button>
-      </div>
+      </nav>
     </div>
   );
 }
+

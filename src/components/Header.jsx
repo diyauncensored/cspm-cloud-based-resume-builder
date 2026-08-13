@@ -142,27 +142,31 @@ export default function Header({
       window.print();
     }
   };
-
   return (
-    <header className="app-header">
+    <header className="app-header" role="banner">
       <div className="brand-logo">
-        <div className="brand-icon">
+        <div className="brand-icon" aria-hidden="true">
           <FileText size={20} />
         </div>
         <span>ResumeCraft</span>
       </div>
 
-      <div className="header-actions">
-        {/* Auto save badge */}
-        <div className={`save-status-badge ${saveStatus === 'saved' ? 'saved' : ''}`}>
+      <div className="header-actions" role="toolbar" aria-label="Resume actions">
+        {/* Auto save badge — announce status changes to screen readers */}
+        <div 
+          className={`save-status-badge ${saveStatus === 'saved' ? 'saved' : ''}`}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {saveStatus === 'saved' ? (
             <>
-              <Check size={14} />
+              <Check size={14} aria-hidden="true" />
               <span>Draft Saved</span>
             </>
           ) : (
             <>
-              <RefreshCw size={14} className="spin" />
+              <RefreshCw size={14} className="spin" aria-hidden="true" />
               <span>Saving...</span>
             </>
           )}
@@ -173,8 +177,9 @@ export default function Header({
           className="btn btn-secondary" 
           onClick={onLoadSample}
           title="Pre-fill form with realistic sample resume data"
+          aria-label="Load sample resume data"
         >
-          <Sparkles size={16} />
+          <Sparkles size={16} aria-hidden="true" />
           <span className="hide-mobile">Sample Data</span>
         </button>
 
@@ -183,23 +188,27 @@ export default function Header({
           className="btn btn-secondary btn-icon-only" 
           onClick={handleExportJson}
           title="Export resume data as JSON file"
+          aria-label="Export resume data as JSON"
         >
-          <FileDown size={16} />
+          <FileDown size={16} aria-hidden="true" />
         </button>
 
         <button 
           className="btn btn-secondary btn-icon-only" 
           onClick={() => fileInputRef.current?.click()}
           title="Import resume data from JSON file"
+          aria-label="Import resume data from JSON"
         >
-          <FileUp size={16} />
+          <FileUp size={16} aria-hidden="true" />
         </button>
         <input 
           type="file" 
           ref={fileInputRef} 
           style={{ display: 'none' }} 
           accept=".json" 
-          onChange={handleImportJson} 
+          onChange={handleImportJson}
+          aria-label="Select JSON file to import"
+          tabIndex={-1}
         />
 
         {/* Reset */}
@@ -207,8 +216,9 @@ export default function Header({
           className="btn btn-secondary btn-icon-only" 
           onClick={onResetData}
           title="Clear all fields"
+          aria-label="Clear all resume data"
         >
-          <RotateCcw size={16} />
+          <RotateCcw size={16} aria-hidden="true" />
         </button>
 
         {/* Dark/Light mode toggle */}
@@ -216,8 +226,10 @@ export default function Header({
           className="btn btn-secondary btn-icon-only" 
           onClick={toggleTheme}
           title="Toggle light/dark editor mode"
+          aria-label={styleSettings.darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={styleSettings.darkMode}
         >
-          {styleSettings.darkMode ? <Sun size={16} /> : <Moon size={16} />}
+          {styleSettings.darkMode ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
         </button>
 
         {/* Print (Native Vector PDF) */}
@@ -225,8 +237,9 @@ export default function Header({
           className="btn btn-secondary" 
           onClick={() => window.print()}
           title="Print or save vector PDF using browser print dialog"
+          aria-label="Print resume"
         >
-          <Printer size={16} />
+          <Printer size={16} aria-hidden="true" />
           <span className="hide-mobile">Print</span>
         </button>
 
@@ -235,8 +248,9 @@ export default function Header({
           className="btn btn-primary" 
           onClick={handleDownloadPdf}
           title="Download PDF directly"
+          aria-label="Download resume as PDF"
         >
-          <Download size={16} />
+          <Download size={16} aria-hidden="true" />
           <span>Download PDF</span>
         </button>
       </div>

@@ -12,7 +12,6 @@ import {
   Check,
   RefreshCw
 } from 'lucide-react';
-import { exportToPdf, triggerNativePrint } from '../utils/pdfExport';
 
 export default function Header({ 
   resumeData, 
@@ -61,9 +60,87 @@ export default function Header({
     }
   };
 
-  const handleDownloadPdf = () => {
-    const filename = `${resumeData.personalInfo.fullName || 'Resume'}_CV.pdf`;
-    exportToPdf('resume-preview-canvas', filename);
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('resume-preview-canvas');
+    if (!element) {
+      alert('Resume preview not found. Please make sure the preview is visible.');
+      return;
+    }
+
+    // Build a safe filename
+    const rawName = resumeData.personalInfo.fullName || 'Resume';
+    const safeName = rawName.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const pdfFilename = safeName + '_CV.pdf';
+
+    try {
+      // Dynamically import to avoid any caching issues
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
+      const jspdfModule = await import('jspdf');
+      const jsPDF = jspdfModule.jsPDF;
+
+      // Render the preview element to a high-res canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pdfPageHeight;
+
+      while (heightLeft > 5) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pdfPageHeight;
+      }
+
+      // Get raw arraybuffer, build Blob with explicit MIME type
+      const arrayBuf = pdf.output('arraybuffer');
+      const blob = new Blob([arrayBuf], { type: 'application/pdf' });
+
+      // Create object URL and download via anchor element
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pdfFilename;
+      a.type = 'application/pdf';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup after a short delay
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 500);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      alert('PDF generation failed. Falling back to browser print.');
+      window.print();
+    }
   };
 
   return (
@@ -146,7 +223,7 @@ export default function Header({
         {/* Print (Native Vector PDF) */}
         <button 
           className="btn btn-secondary" 
-          onClick={triggerNativePrint}
+          onClick={() => window.print()}
           title="Print or save vector PDF using browser print dialog"
         >
           <Printer size={16} />
